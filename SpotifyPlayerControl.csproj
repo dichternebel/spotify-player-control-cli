@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net6.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <ApplicationIcon>DichterNebe1.ico</ApplicationIcon>
+    <Version>0.9.0</Version>
+    <Authors>dichternebel</Authors>
+    <!--
+    <IncludeAllContentForSelfExtract>true</IncludeAllContentForSelfExtract>
+    -->
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Content Include="DichterNebe1.ico" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="SpotifyAPI.Web.Auth" Version="7.0.0" />
+    <PackageReference Include="System.Configuration.ConfigurationManager" Version="7.0.0" />
+  </ItemGroup>
+
+</Project>
