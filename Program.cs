@@ -3,6 +3,7 @@ using System.Text;
 using Newtonsoft.Json;
 using SpotifyAPI.Web;
 using SpotifyAPI.Web.Auth;
+using Swan.Logging;
 using static SpotifyAPI.Web.Scopes;
 
 namespace SpotifyPlayerControl
@@ -11,7 +12,7 @@ namespace SpotifyPlayerControl
     {
         private const string CredentialsPath = "credentials.json";
         private static readonly string? clientId = ConfigurationManager.AppSettings["ClientID"];
-        private static readonly EmbedIOAuthServer _server = new EmbedIOAuthServer(new Uri("http://localhost:5000/spotifyCallback"), 5000);
+        private static EmbedIOAuthServer _server;
 
         private static void Exiting() => Console.CursorVisible = true;
 
@@ -36,6 +37,11 @@ namespace SpotifyPlayerControl
             //args = new[] { "!mute" };
             //args = new[] { "!vol", "-50" };
 #endif
+
+            // Disable logging output from web server
+            // https://github.com/unosquare/embedio/wiki/Cookbook#logging-turn-off-or-customize
+            Logger.UnregisterLogger<ConsoleLogger>();
+            _server = new EmbedIOAuthServer(new Uri("http://localhost:5000/spotifyCallback"), 5000);
 
             var command = "";
             var payload = "";
