@@ -158,7 +158,7 @@ namespace SpotifyPlayerControl
             {
                 CodeChallenge = challenge,
                 CodeChallengeMethod = "S256",
-                Scope = new List<string> { UserReadPlaybackState, UserModifyPlaybackState, UserReadCurrentlyPlaying, UserReadPlaybackState, UserReadPlaybackPosition, UserReadRecentlyPlayed }
+                Scope = new List<string> { UserReadPlaybackState, UserModifyPlaybackState, UserReadCurrentlyPlaying, UserReadPlaybackPosition, UserReadRecentlyPlayed }
             };
 
             Uri uri = request.ToUri();
@@ -298,11 +298,13 @@ namespace SpotifyPlayerControl
             {
                 await File.WriteAllTextAsync("currentVolume.txt", currentVolume.Value.ToString());
                 await spotify.Player.SetVolume(new PlayerVolumeRequest(0));
+                Console.Out.Write("0");
             }
             if (!currentVolume.HasValue || currentVolume.Value == 0)
             {
                 var volume = await File.ReadAllTextAsync("currentVolume.txt");
                 await spotify.Player.SetVolume(new PlayerVolumeRequest(int.Parse(volume)));
+                Console.Out.Write(volume);
             }
         }
 
@@ -318,27 +320,40 @@ namespace SpotifyPlayerControl
             if (!int.TryParse(payload, out volumeRequest)) return;
 
             // already muted guard
-            if ((!currentVolume.HasValue || currentVolume.Value == 0) && volumeRequest < 1) return;
+            if ((!currentVolume.HasValue || currentVolume.Value == 0) && volumeRequest < 1)
+            {
+                Console.Out.Write("0");
+                return;
+            }
 
             // already max volume guard
-            if ((currentVolume.HasValue && currentVolume.Value == 100) && volumeRequest > 0) return;
+            if ((currentVolume.HasValue && currentVolume.Value == 100) && volumeRequest > 0)
+            {
+                Console.Out.Write("100");
+                return;
+            }
+
+            var newVolume = currentVolume.Value + volumeRequest;
 
             // set max
-            if (currentVolume.Value + volumeRequest > 99)
+            if (newVolume > 99)
             {
                 await spotify.Player.SetVolume(new PlayerVolumeRequest(100));
+                Console.Out.Write("100");
                 return;
             }
 
             // set mute
-            if (currentVolume.Value + volumeRequest < 1)
+            if (newVolume < 1)
             {
                 await spotify.Player.SetVolume(new PlayerVolumeRequest(0));
+                Console.Out.Write("0");
                 return;
             }
 
             // change volume
-            await spotify.Player.SetVolume(new PlayerVolumeRequest(currentVolume.Value + volumeRequest));
+            await spotify.Player.SetVolume(new PlayerVolumeRequest(newVolume));
+            Console.Out.Write(newVolume);
         }
     }
 }

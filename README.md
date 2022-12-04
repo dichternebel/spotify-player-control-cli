@@ -62,8 +62,8 @@ Hint: To use the commands in `cmd` the second argument has to be quoted like `!p
 | Skip to previous | `!back` or `!prev`||
 | Shuffle playback | `!shuffle` (_warning_: weird errors may occur!)||
 | Switch Repeat    | `!repeat` (_warning_: weird errors may occur!)||
-| Toggle Mute      | `!mute`||
-| Change Volume    | `!vol -10` or `!volume -10` to decrease by 10||
+| Toggle Mute      | `!mute`                                                                           | 0 or 100 |
+| Change Volume    | `!vol -10` or `!volume -10` to decrease by 10                                     | `current Volume` |
 
  ## How is this working and why?
 
