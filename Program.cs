@@ -12,7 +12,10 @@ namespace SpotifyPlayerControl
     {
         private const string CredentialsPath = "credentials.json";
         private static readonly string? clientId = ConfigurationManager.AppSettings["ClientID"];
+
+#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
         private static EmbedIOAuthServer _server;
+#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
 
         private static void Exiting() => Console.CursorVisible = true;
 
@@ -40,8 +43,7 @@ namespace SpotifyPlayerControl
 
             // Disable logging output from web server
             // https://github.com/unosquare/embedio/wiki/Cookbook#logging-turn-off-or-customize
-            Logger.UnregisterLogger<ConsoleLogger>();
-            _server = new EmbedIOAuthServer(new Uri("http://localhost:5000/spotifyCallback"), 5000);
+            //Logger.UnregisterLogger<ConsoleLogger>();
 
             var command = "";
             var payload = "";
@@ -64,10 +66,11 @@ namespace SpotifyPlayerControl
             }
             else
             {
+                _server = new EmbedIOAuthServer(new Uri("http://localhost:5000/spotifyCallback"), 5000);
                 await StartAuthentication(command, payload);
             }
 
-            Console.ReadKey();
+            await Task.Delay(-1);
             return 0;
         }
 
@@ -140,7 +143,6 @@ namespace SpotifyPlayerControl
             else if (command != "") NoActivePlayer(userProfile);
             else GreetUser(userProfile);
 
-            _server.Dispose();
             Environment.Exit(0);
         }
 
@@ -155,6 +157,7 @@ namespace SpotifyPlayerControl
                 PKCETokenResponse token = await new OAuthClient().RequestToken(
                   new PKCETokenRequest(clientId!, response.Code, _server.BaseUri, verifier)
                 );
+                _server.Dispose();
 
                 await File.WriteAllTextAsync(CredentialsPath, JsonConvert.SerializeObject(token));
                 await Start(command, payload);
@@ -174,7 +177,7 @@ namespace SpotifyPlayerControl
             }
             catch (Exception)
             {
-                Console.WriteLine("Unable to open URL, manually open: {0}", uri);
+               $"Unable to open URL, manually open: {uri}".Warn();
             }
         }
 
