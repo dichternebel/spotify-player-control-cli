@@ -1,5 +1,6 @@
 ﻿using System.Configuration;
 using System.Text;
+using System.Web;
 using Newtonsoft.Json;
 using SpotifyAPI.Web;
 using SpotifyAPI.Web.Auth;
@@ -30,7 +31,9 @@ namespace SpotifyPlayerControl
             //args = new[] { "!skip" };
             //args = new[] { "!prev" };
             //args = new[] { "!play", "https://open.spotify.com/track/14BIjb7JQJzUPBE7PxLV25?si=69f799ac9b154e82" };
+            //args = new[] { "!play", "https%3A%2F%2Fopen.spotify.com%2Ftrack%2F1huvTbEYtgltjQRXzrNKGi" };
             //args = new[] { "!play", "Peace Orchestra - Double Drums" };
+            //args = new[] { "!play", "Peace+Orchestra+-+Double+Drums" };
             //args = new[] { "!play", "Where is my mind?" };
             //args = new[] { "!song" };
             //args = new[] { "!next" };
@@ -201,16 +204,21 @@ namespace SpotifyPlayerControl
         private static async Task AddTrackToQueue(SpotifyClient spotify, string songRequest)
         {
             var sb = new StringBuilder();
+            songRequest = HttpUtility.UrlDecode(songRequest);
 
             // Spotify URL given with track ID
             if (songRequest.StartsWith("https://open.spotify.com/track/"))
             {
                 var uri = new Uri(songRequest);
+                var trackId = uri.Segments[2];
                 sb.Append("spotify:track:");
-                sb.Append(uri.Segments[2]);
+                sb.Append(trackId);
 
                 var request = new PlayerAddToQueueRequest(sb.ToString());
                 await spotify.Player.AddToQueue(request);
+
+                var requestedTrack = await spotify.Tracks.Get(trackId);
+                Console.Out.Write($"'{requestedTrack.Artists[0].Name} - {requestedTrack.Name}'");
             }
             // Need to search for the song and hope the best
             else
