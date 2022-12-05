@@ -40,6 +40,7 @@ This is done in order to reduce the authentication roundtrips and you should not
 ## Preparing usage with with Streamer.bot
 - Go to the [releases](https://github.com/dichternebel/spotify-player-control-cli/releases) and download the Streamer.bot exports
 - Import them into Streamer.bot and you will get three entries to the *Commands* tab and one to the *Actions* tab
+- **Attention:** The imported Commands are disabled by default! You have to enable them manually!
 - Go to the *Actions* tab and just change the Sub-Action `Set argument %path%` in the command called `TwitchSpotifyPlayerControl` to point to the location of `SpotifyPlayerControl.exe`
 
 ## Twitch chat usage
