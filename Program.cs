@@ -30,7 +30,7 @@ namespace SpotifyPlayerControl
             //args = new[] { "!pause" };
             //args = new[] { "!skip" };
             //args = new[] { "!prev" };
-            //args = new[] { "!play", "https://open.spotify.com/track/14BIjb7JQJzUPBE7PxLV25?si=69f799ac9b154e82" };
+            args = new[] { "!play", "https://open.spotify.com/track/14BIjb7JQJzUPBE7PxLV25?si=69f799ac9b154e82" };
             //args = new[] { "!play", "https%3A%2F%2Fopen.spotify.com%2Ftrack%2F1huvTbEYtgltjQRXzrNKGi" };
             //args = new[] { "!play", "Peace Orchestra - Double Drums" };
             //args = new[] { "!play", "Peace+Orchestra+-+Double+Drums" };
@@ -214,11 +214,17 @@ namespace SpotifyPlayerControl
                 sb.Append("spotify:track:");
                 sb.Append(trackId);
 
-                var request = new PlayerAddToQueueRequest(sb.ToString());
-                await spotify.Player.AddToQueue(request);
-
                 var requestedTrack = await spotify.Tracks.Get(trackId);
-                Console.Out.Write($"'{requestedTrack.Artists[0].Name} - {requestedTrack.Name}'");
+                if (requestedTrack != null && requestedTrack.Artists.Count > 0)
+                {
+                    var request = new PlayerAddToQueueRequest(sb.ToString());
+                    await spotify.Player.AddToQueue(request);
+                    Console.Write($"'{requestedTrack.Artists[0].Name} - {requestedTrack.Name}'");
+                }
+                else
+                {
+                    Console.Write("404 - Track not found!");
+                }
             }
             // Need to search for the song and hope the best
             else
@@ -245,7 +251,11 @@ namespace SpotifyPlayerControl
                 {
                     var request = new PlayerAddToQueueRequest(searchResponse.Tracks.Items[0].Uri);
                     await spotify.Player.AddToQueue(request);
-                    Console.Out.Write($"'{searchResponse.Tracks.Items[0].Artists[0].Name} - {searchResponse.Tracks.Items[0].Name}'");
+                    Console.Write($"'{searchResponse.Tracks.Items[0].Artists[0].Name} - {searchResponse.Tracks.Items[0].Name}'");
+                }
+                else
+                {
+                    Console.Write("404 - Track not found!");
                 }
             }
 
@@ -261,7 +271,7 @@ namespace SpotifyPlayerControl
             if (currentlyPlaying != null && currentlyPlaying.IsPlaying)
             {
                 var fullTrack = ((FullTrack)currentlyPlaying.Item);
-                Console.Out.Write($"'{fullTrack.Artists[0].Name} - {fullTrack.Name}' -> {fullTrack.ExternalUrls["spotify"]}");
+                Console.Write($"'{fullTrack.Artists[0].Name} - {fullTrack.Name}' -> {fullTrack.ExternalUrls["spotify"]}");
             }
         }
 
@@ -271,7 +281,7 @@ namespace SpotifyPlayerControl
             if (queueResponse != null && queueResponse.Queue.Count > 0)
             {
                 var fullTrack = ((FullTrack)queueResponse.Queue[0]);
-                Console.Out.Write($"'{fullTrack.Artists[0].Name} - {fullTrack.Name}' -> {fullTrack.ExternalUrls["spotify"]}");
+                Console.Write($"'{fullTrack.Artists[0].Name} - {fullTrack.Name}' -> {fullTrack.ExternalUrls["spotify"]}");
             }
         }
 
@@ -281,7 +291,7 @@ namespace SpotifyPlayerControl
             if (recentlyPlayedItems == null || recentlyPlayedItems.Items.Count == 0) return;
 
             var fullTrack = recentlyPlayedItems.Items[0].Track;
-            Console.Out.Write($"'{fullTrack.Artists[0].Name} - {fullTrack.Name}' -> {fullTrack.ExternalUrls["spotify"]}");
+            Console.Write($"'{fullTrack.Artists[0].Name} - {fullTrack.Name}' -> {fullTrack.ExternalUrls["spotify"]}");
         }
 
         private static async Task ToggleShuffle(SpotifyClient spotify, CurrentlyPlayingContext currentPlayback)
@@ -315,13 +325,13 @@ namespace SpotifyPlayerControl
             {
                 await File.WriteAllTextAsync("currentVolume.txt", currentVolume.Value.ToString());
                 await spotify.Player.SetVolume(new PlayerVolumeRequest(0));
-                Console.Out.Write("0");
+                Console.Write("0");
             }
             if (!currentVolume.HasValue || currentVolume.Value == 0)
             {
                 var volume = await File.ReadAllTextAsync("currentVolume.txt");
                 await spotify.Player.SetVolume(new PlayerVolumeRequest(int.Parse(volume)));
-                Console.Out.Write(volume);
+                Console.Write(volume);
             }
         }
 
@@ -339,14 +349,14 @@ namespace SpotifyPlayerControl
             // already muted guard
             if ((!currentVolume.HasValue || currentVolume.Value == 0) && volumeRequest < 1)
             {
-                Console.Out.Write("0");
+                Console.Write("0");
                 return;
             }
 
             // already max volume guard
             if ((currentVolume.HasValue && currentVolume.Value == 100) && volumeRequest > 0)
             {
-                Console.Out.Write("100");
+                Console.Write("100");
                 return;
             }
 
@@ -356,7 +366,7 @@ namespace SpotifyPlayerControl
             if (newVolume > 99)
             {
                 await spotify.Player.SetVolume(new PlayerVolumeRequest(100));
-                Console.Out.Write("100");
+                Console.Write("100");
                 return;
             }
 
@@ -364,13 +374,13 @@ namespace SpotifyPlayerControl
             if (newVolume < 1)
             {
                 await spotify.Player.SetVolume(new PlayerVolumeRequest(0));
-                Console.Out.Write("0");
+                Console.Write("0");
                 return;
             }
 
             // change volume
             await spotify.Player.SetVolume(new PlayerVolumeRequest(newVolume));
-            Console.Out.Write(newVolume);
+            Console.Write(newVolume);
         }
     }
 }
