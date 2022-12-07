@@ -1,4 +1,5 @@
 ﻿using System.Configuration;
+using System.Diagnostics;
 using System.Text;
 using System.Web;
 using Newtonsoft.Json;
@@ -11,11 +12,12 @@ namespace SpotifyPlayerControl
 {
     public class Program
     {
-        private const string CredentialsPath = "credentials.json";
         private static readonly string? clientId = ConfigurationManager.AppSettings["ClientID"];
 
 #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
         private static EmbedIOAuthServer _server;
+
+        private static string CredentialsPath { get; set; }
 #pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
 
         private static void Exiting() => Console.CursorVisible = true;
@@ -30,7 +32,7 @@ namespace SpotifyPlayerControl
             //args = new[] { "!pause" };
             //args = new[] { "!skip" };
             //args = new[] { "!prev" };
-            args = new[] { "!play", "https://open.spotify.com/track/14BIjb7JQJzUPBE7PxLV25?si=69f799ac9b154e82" };
+            //args = new[] { "!play", "https://open.spotify.com/track/14BIjb7JQJzUPBE7PxLV25?si=69f799ac9b154e82" };
             //args = new[] { "!play", "https%3A%2F%2Fopen.spotify.com%2Ftrack%2F1huvTbEYtgltjQRXzrNKGi" };
             //args = new[] { "!play", "Peace Orchestra - Double Drums" };
             //args = new[] { "!play", "Peace+Orchestra+-+Double+Drums" };
@@ -43,6 +45,9 @@ namespace SpotifyPlayerControl
             //args = new[] { "!mute" };
             //args = new[] { "!vol", "-50" };
 #endif
+
+            // initialize path
+            CredentialsPath = Path.Combine(System.AppContext.BaseDirectory, "credentials.json");
 
             // Disable logging output from web server
             // https://github.com/unosquare/embedio/wiki/Cookbook#logging-turn-off-or-customize
@@ -323,13 +328,13 @@ namespace SpotifyPlayerControl
 
             if (currentVolume.HasValue && currentVolume.Value > 0)
             {
-                await File.WriteAllTextAsync("currentVolume.txt", currentVolume.Value.ToString());
+                await File.WriteAllTextAsync(Path.Combine(System.AppContext.BaseDirectory, "currentVolume.txt"), currentVolume.Value.ToString());
                 await spotify.Player.SetVolume(new PlayerVolumeRequest(0));
                 Console.Write("0");
             }
             if (!currentVolume.HasValue || currentVolume.Value == 0)
             {
-                var volume = await File.ReadAllTextAsync("currentVolume.txt");
+                var volume = await File.ReadAllTextAsync(Path.Combine(System.AppContext.BaseDirectory, "currentVolume.txt"));
                 await spotify.Player.SetVolume(new PlayerVolumeRequest(int.Parse(volume)));
                 Console.Write(volume);
             }
