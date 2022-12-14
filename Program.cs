@@ -1,5 +1,4 @@
 ﻿using System.Configuration;
-using System.Diagnostics;
 using System.Text;
 using System.Web;
 using Newtonsoft.Json;
@@ -44,6 +43,7 @@ namespace SpotifyPlayerControl
             //args = new[] { "!repeat" }; //restriction violated... no idea what that means, doh!
             //args = new[] { "!mute" };
             //args = new[] { "!vol", "-50" };
+            //args = new[] { "!playlist" };
 #endif
 
             // initialize path
@@ -91,58 +91,60 @@ namespace SpotifyPlayerControl
             authenticator.TokenRefreshed += (sender, token) => File.WriteAllText(CredentialsPath, JsonConvert.SerializeObject(token));
 
             var config = SpotifyClientConfig.CreateDefault().WithAuthenticator(authenticator);
-            var spotify = new SpotifyClient(config);
+            var spotifyClient = new SpotifyClient(config);
 
             // Get the current user profile
-            var userProfile = await spotify.UserProfile.Current();
+            var userProfile = await spotifyClient.UserProfile.Current();
 
             // Check if we have an active player or not
-            var currentPlayback = await spotify.Player.GetCurrentPlayback();
+            var currentPlayback = await spotifyClient.Player.GetCurrentPlayback();
 
             if (currentPlayback != null && currentPlayback.Device.IsActive)
                 switch (command)
                 {
                     case "!start":
                     case "!resume":
-                        await spotify.Player.ResumePlayback();
+                        await spotifyClient.Player.ResumePlayback();
                         break;
                     case "!pause":
-                        await spotify.Player.PausePlayback();
+                        await spotifyClient.Player.PausePlayback();
                         break;
                     case "!skip":
-                        await spotify.Player.SkipNext();
+                        await spotifyClient.Player.SkipNext();
                         break;
                     case "!prev":
                     case "!back":
-                        await spotify.Player.SkipPrevious();
+                        await spotifyClient.Player.SkipPrevious();
                         break;
                     case "!play":
                     case "!queue":
-                        await AddTrackToQueue(spotify, payload);
+                        await AddTrackToQueue(spotifyClient, payload);
                         break;
                     case "!song":
                     case "!music":
-                    case "!playlist":
-                        await GetCurrentTrackInfo(spotify);
+                        await GetCurrentTrackInfo(spotifyClient);
                         break;
                     case "!next":
-                        await GetNextTrackInfo(spotify);
+                        await GetNextTrackInfo(spotifyClient);
                         break;
                     case "!recent":
-                        await GetRecentlyPlayed(spotify);
+                        await GetRecentlyPlayed(spotifyClient);
                         break;
                     case "!shuffle":
-                        await ToggleShuffle(spotify, currentPlayback);
+                        await ToggleShuffle(spotifyClient, currentPlayback);
                         break;
                     case "!repeat":
-                        await SwitchRepeat(spotify, currentPlayback);
+                        await SwitchRepeat(spotifyClient, currentPlayback);
                         break;
                     case "!mute":
-                        await ToggleMute(spotify, currentPlayback);
+                        await ToggleMute(spotifyClient, currentPlayback);
                         break;
                     case "!vol":
                     case "!volume":
-                        await ChangeVolume(spotify, currentPlayback, payload);
+                        await ChangeVolume(spotifyClient, currentPlayback, payload);
+                        break;
+                    case "!playlist":
+                        await GetCurrentPlaylist(spotifyClient, currentPlayback);
                         break;
                     default:
                         GreetUser(userProfile);
@@ -206,7 +208,7 @@ namespace SpotifyPlayerControl
             Console.WriteLine("Please play a Spotify song on your client before triggering an action from the CLI and then try again.");
         }
 
-        private static async Task AddTrackToQueue(SpotifyClient spotify, string songRequest)
+        private static async Task AddTrackToQueue(SpotifyClient spotifyClient, string songRequest)
         {
             var sb = new StringBuilder();
             songRequest = HttpUtility.UrlDecode(songRequest);
@@ -219,11 +221,11 @@ namespace SpotifyPlayerControl
                 sb.Append("spotify:track:");
                 sb.Append(trackId);
 
-                var requestedTrack = await spotify.Tracks.Get(trackId);
+                var requestedTrack = await spotifyClient.Tracks.Get(trackId);
                 if (requestedTrack != null && requestedTrack.Artists.Count > 0)
                 {
                     var request = new PlayerAddToQueueRequest(sb.ToString());
-                    await spotify.Player.AddToQueue(request);
+                    await spotifyClient.Player.AddToQueue(request);
                     Console.Write($"'{requestedTrack.Artists[0].Name} - {requestedTrack.Name}'");
                 }
                 else
@@ -250,12 +252,12 @@ namespace SpotifyPlayerControl
                 }
 
                 var searchRequest = new SearchRequest(SearchRequest.Types.Track, sb.ToString());
-                var searchResponse = await spotify.Search.Item(searchRequest);
+                var searchResponse = await spotifyClient.Search.Item(searchRequest);
 
                 if (searchResponse.Tracks.Items != null && searchResponse.Tracks.Items.Count > 0)
                 {
                     var request = new PlayerAddToQueueRequest(searchResponse.Tracks.Items[0].Uri);
-                    await spotify.Player.AddToQueue(request);
+                    await spotifyClient.Player.AddToQueue(request);
                     Console.Write($"'{searchResponse.Tracks.Items[0].Artists[0].Name} - {searchResponse.Tracks.Items[0].Name}'");
                 }
                 else
@@ -269,10 +271,10 @@ namespace SpotifyPlayerControl
             // await spotify.Player.SkipNext(); <- not working when more than one item were added to queue...
         }
 
-        private static async Task GetCurrentTrackInfo(SpotifyClient spotify)
+        private static async Task GetCurrentTrackInfo(SpotifyClient spotifyClient)
         {
             var currentlyPlayingRequest = new PlayerCurrentlyPlayingRequest(PlayerCurrentlyPlayingRequest.AdditionalTypes.Track);
-            var currentlyPlaying = await spotify.Player.GetCurrentlyPlaying(currentlyPlayingRequest);
+            var currentlyPlaying = await spotifyClient.Player.GetCurrentlyPlaying(currentlyPlayingRequest);
             if (currentlyPlaying != null && currentlyPlaying.IsPlaying)
             {
                 var fullTrack = ((FullTrack)currentlyPlaying.Item);
@@ -280,9 +282,9 @@ namespace SpotifyPlayerControl
             }
         }
 
-        private static async Task GetNextTrackInfo(SpotifyClient spotify)
+        private static async Task GetNextTrackInfo(SpotifyClient spotifyClient)
         {
-            var queueResponse = await spotify.Player.GetQueue();
+            var queueResponse = await spotifyClient.Player.GetQueue();
             if (queueResponse != null && queueResponse.Queue.Count > 0)
             {
                 var fullTrack = ((FullTrack)queueResponse.Queue[0]);
@@ -290,22 +292,22 @@ namespace SpotifyPlayerControl
             }
         }
 
-        private static async Task GetRecentlyPlayed(SpotifyClient spotify)
+        private static async Task GetRecentlyPlayed(SpotifyClient spotifyClient)
         {
-            var recentlyPlayedItems = await spotify.Player.GetRecentlyPlayed();
+            var recentlyPlayedItems = await spotifyClient.Player.GetRecentlyPlayed();
             if (recentlyPlayedItems == null || recentlyPlayedItems.Items.Count == 0) return;
 
             var fullTrack = recentlyPlayedItems.Items[0].Track;
             Console.Write($"'{fullTrack.Artists[0].Name} - {fullTrack.Name}' -> {fullTrack.ExternalUrls["spotify"]}");
         }
 
-        private static async Task ToggleShuffle(SpotifyClient spotify, CurrentlyPlayingContext currentPlayback)
+        private static async Task ToggleShuffle(SpotifyClient spotifyClient, CurrentlyPlayingContext currentPlayback)
         {
             var playerShuffleRequest = new PlayerShuffleRequest(!currentPlayback.ShuffleState);
-            await spotify.Player.SetShuffle(playerShuffleRequest);
+            await spotifyClient.Player.SetShuffle(playerShuffleRequest);
         }
 
-        private static async Task SwitchRepeat(SpotifyClient spotify, CurrentlyPlayingContext currentPlayback)
+        private static async Task SwitchRepeat(SpotifyClient spotifyClient, CurrentlyPlayingContext currentPlayback)
         {
             var currentRepeatState = currentPlayback.RepeatState;
             var targetRepeatState = PlayerSetRepeatRequest.State.Off;
@@ -319,28 +321,28 @@ namespace SpotifyPlayerControl
                     break;
             }
             var playerRepeatRequest = new PlayerSetRepeatRequest(targetRepeatState);
-            await spotify.Player.SetRepeat(playerRepeatRequest);
+            await spotifyClient.Player.SetRepeat(playerRepeatRequest);
         }
 
-        private static async Task ToggleMute(SpotifyClient spotify, CurrentlyPlayingContext currentPlayback)
+        private static async Task ToggleMute(SpotifyClient spotifyClient, CurrentlyPlayingContext currentPlayback)
         {
             var currentVolume = currentPlayback.Device.VolumePercent;
 
             if (currentVolume.HasValue && currentVolume.Value > 0)
             {
                 await File.WriteAllTextAsync(Path.Combine(System.AppContext.BaseDirectory, "currentVolume.txt"), currentVolume.Value.ToString());
-                await spotify.Player.SetVolume(new PlayerVolumeRequest(0));
+                await spotifyClient.Player.SetVolume(new PlayerVolumeRequest(0));
                 Console.Write("0");
             }
             if (!currentVolume.HasValue || currentVolume.Value == 0)
             {
                 var volume = await File.ReadAllTextAsync(Path.Combine(System.AppContext.BaseDirectory, "currentVolume.txt"));
-                await spotify.Player.SetVolume(new PlayerVolumeRequest(int.Parse(volume)));
+                await spotifyClient.Player.SetVolume(new PlayerVolumeRequest(int.Parse(volume)));
                 Console.Write(volume);
             }
         }
 
-        private static async Task ChangeVolume(SpotifyClient spotify, CurrentlyPlayingContext currentPlayback, string payload)
+        private static async Task ChangeVolume(SpotifyClient spotifyClient, CurrentlyPlayingContext currentPlayback, string payload)
         {
             var currentVolume = currentPlayback.Device.VolumePercent;
 
@@ -370,7 +372,7 @@ namespace SpotifyPlayerControl
             // set max
             if (newVolume > 99)
             {
-                await spotify.Player.SetVolume(new PlayerVolumeRequest(100));
+                await spotifyClient.Player.SetVolume(new PlayerVolumeRequest(100));
                 Console.Write("100");
                 return;
             }
@@ -378,14 +380,35 @@ namespace SpotifyPlayerControl
             // set mute
             if (newVolume < 1)
             {
-                await spotify.Player.SetVolume(new PlayerVolumeRequest(0));
+                await spotifyClient.Player.SetVolume(new PlayerVolumeRequest(0));
                 Console.Write("0");
                 return;
             }
 
             // change volume
-            await spotify.Player.SetVolume(new PlayerVolumeRequest(newVolume));
+            await spotifyClient.Player.SetVolume(new PlayerVolumeRequest(newVolume));
             Console.Write(newVolume);
+        }
+
+        private static async Task GetCurrentPlaylist(SpotifyClient spotifyClient, CurrentlyPlayingContext currentPlayback)
+        {
+            if (currentPlayback.Context.Type != "playlist")
+            {
+                Console.Write("404 - No playlist in use!");
+                return;
+            }
+
+            var playListId = currentPlayback.Context.Uri.Replace("spotify:playlist:", "");
+            var currentPlaylist = await spotifyClient.Playlists.Get(playListId);
+
+            if (currentPlaylist == null)
+            {
+                Console.Write("404 - Playlist not found!");
+                return;
+            }
+
+            string privString = !currentPlaylist.Public.Value ? "(private)" : $" -> {currentPlaylist.ExternalUrls["spotify"]}";
+            Console.Write($"'{currentPlaylist.Name.Trim()}' by {currentPlaylist.Owner.DisplayName.Trim()} {privString}");
         }
     }
 }

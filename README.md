@@ -1,4 +1,4 @@
-# spotify-player-control-cli [![Licensed under the MIT License](https://img.shields.io/badge/License-MIT-blue.svg)](https://github.com/dichternebel/spotify-player-control-cli/blob/main/LICENSE)
+# Spotify Player Control CLI [![Licensed under the MIT License](https://img.shields.io/badge/License-MIT-blue.svg)](https://github.com/dichternebel/spotify-player-control-cli/blob/main/LICENSE)
 Control your active Spotify player with this .Net Core CLI.
 
 This .Net Core console app allows you to control your currently active Spotify player. It gives back some information to be used for example as a chat reponse on your Twitch channel.
@@ -17,7 +17,7 @@ Now open the `SpotifyPlayerControl.dll.config` e.g. with Notepad/Editor and past
 <?xml version="1.0" encoding="utf-8" ?>
 <configuration>
   <appSettings>
-    <add key="ClientID" value="012345667890abcdefghijklmnopqrst"/>
+    <add key="ClientID" value="01234567890abcdefghijklmnopqrst"/>
   </appSettings>
 </configuration>
 ```
@@ -37,26 +37,32 @@ This is done in order to reduce the authentication roundtrips and you should not
 ## Stand-alone usage
 - Go to the `cmd` and type e.g. `SpotifyPlayerControl.exe !song` to get information about the currently played track.
 
-## Preparing usage with with Streamer.bot
-- Go to the [releases](https://github.com/dichternebel/spotify-player-control-cli/releases) and download the Streamer.bot exports
-- Import them into Streamer.bot and you will get three entries to the *Commands* tab and one to the *Actions* tab
+## Usage with with Streamer.bot
+- Go to the [releases](https://github.com/dichternebel/spotify-player-control-cli/releases) and download the Streamer.bot export
+- Import it into Streamer.bot and you will get three entries to the *Commands* tab and one to the *Actions* tab
 - **Attention:** The imported Commands are disabled by default! You have to enable them manually!
 - Go to the *Actions* tab and just change the Sub-Action `Set argument %path%` in the command called `TwitchSpotifyPlayerControl` to point to the location of `SpotifyPlayerControl.exe`
+- Go to your Twitch chat and send e.g. `!song` to get information about the currently played track.
 
-## Twitch chat usage
-- Go to your chat and send e.g. `!song` to get information about the currently played track.
+## Usage with SAMMI
+- Go to [releases](https://github.com/dichternebel/spotify-player-control-cli/releases) and download the SAMMI deck export
+- Import the json as a new deck in SAMMI
+- Open the darkened "SpotifyPlayerControl" button and change the "Set Local Variable" named `path` to point to the location of `SpotifyPlayerControl.exe`
+- Hit `Save & Close`
+- Open SAMMI Deck and press one of the lighter buttons to trigger an action
 
 ## Supported Commands
-Hint: To use the commands in `cmd` the second argument has to be quoted like `!play "Where is my mind?"`. This is not needed in the Twitch chat. There you can just send `!play Where is my mind?`
+_Hint:_ To use the commands in `cmd` the second argument has to be quoted like `!play "Where is my mind?"`. This is not needed in the Twitch chat. There you can just send `!play Where is my mind?`
 
-| Purpose          | Command Example                                                                 | Output example                   |
-|:-----------------|:--------------------------------------------------------------------------------|:---------------------------------|
-| Queue a song     | `!play peace orchestra-double drums` or `!queue...`                                 | 'Peace Orchestra - Double Drums' |
+| Purpose          | Command Example                                                                   | Output example                                                        |
+|:-----------------|:----------------------------------------------------------------------------------|:----------------------------------------------------------------------|
+| Queue a song     | `!play peace orchestra-double drums` or `!queue...`                               | 'Peace Orchestra - Double Drums' |
 | Queue a song     | `!play https://open.spotify.com/track/3whUFHX7grfr61GiaymK4p?si=76e406b024084334` | 'Peace Orchestra - Double Drums' |
 | Queue a song     | `!play where is my mind`                                                          | 'Pixies - Where is my mind?' |
-| Get current song | `!song` or `!music` or `!playlist`                                                    | 'Artist - Title' -> https://open.spotify.com/track/12345... |
+| Get current song | `!song` or `!music`                                                               | 'Artist - Title' -> https://open.spotify.com/track/12345... |
 | Get next song    | `!next`                                                                           | 'Artist - Title' -> https://open.spotify.com/track/12345... |
 | Get recent song  | `!recent`                                                                         | 'Artist - Title' -> https://open.spotify.com/track/12345... |
+| Get playlist     | `!playlist`                                                                       | 'Playlistname' by Owner -> https://open.spotify.com/playlist/12345... |
 | Resume           | `!start` or `!resume`||
 | Pause            | `!pause`||
 | Skip to next     | `!skip`||
