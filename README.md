@@ -21,7 +21,7 @@ Now open the `SpotifyPlayerControl.dll.config` e.g. with Notepad/Editor and past
   </appSettings>
 </configuration>
 ```
-Save the file and now open `cmd` or `terminal` at the same location and run the application once by typing `SpotifyPlayerControl.exe` and hit `enter`.
+Save the file and now open `cmd` or `terminal` at the same location and run the application once by typing either `SpotifyPlayerControl.exe` or `.\SpotifyPlayerControl.exe` and hit `enter`.
 
 You should now be prompted to allow the app to control your player. Just agree. This is OAuth2: Only the app itself is able to do things! You can revoke that anytime if you want to.
 
@@ -35,24 +35,24 @@ This is done in order to reduce the authentication roundtrips and you should not
 - Give Spotify a few seconds to register your player as an active device.
 
 ## Stand-alone usage
-- Go to the `cmd` and type e.g. `SpotifyPlayerControl.exe !song` to get information about the currently played track.
+- When using `cmd` type e.g. `SpotifyPlayerControl.exe !song` to get information about the currently played track or `.\SpotifyPlayerControl.exe !song` when using `terminal`.
 
 ## Usage with with Streamer.bot
 - Go to the [releases](https://github.com/dichternebel/spotify-player-control-cli/releases) and download the Streamer.bot export
 - Import it into Streamer.bot and you will get three entries to the *Commands* tab and one to the *Actions* tab
 - **Attention:** The imported Commands are disabled by default! You have to enable them manually!
-- Go to the *Actions* tab and just change the Sub-Action `Set argument %path%` in the command called `TwitchSpotifyPlayerControl` to point to the location of `SpotifyPlayerControl.exe`
-- Go to your Twitch chat and send e.g. `!song` to get information about the currently played track.
+- Go to the *Actions* tab and just change the Sub-Action `Set argument %path%` in the command called `TwitchSpotifyPlayerControl` to point to the location of `SpotifyPlayerControl.exe` e.g. `C:\Tools\SpotifyPlayerControl\SpotifyPlayerControl.exe`
+- Go to your Twitch chat and send e.g. `!song` to get information about the currently played track
 
 ## Usage with SAMMI
 - Go to [releases](https://github.com/dichternebel/spotify-player-control-cli/releases) and download the SAMMI deck export
 - Import the json as a new deck in SAMMI
-- Open the darkened "SpotifyPlayerControl" button and change the "Set Local Variable" named `path` to point to the location of `SpotifyPlayerControl.exe`
+- Open the darkened "SpotifyPlayerControl" button and change the "Set Local Variable" named `path` to point to the location of `SpotifyPlayerControl.exe` e.g. `"C:\Tools\SpotifyPlayerControl\"`
 - Hit `Save & Close`
 - Open SAMMI Deck and press one of the lighter buttons to trigger an action
 
 ## Supported Commands
-_Hint:_ To use the commands in `cmd` the second argument has to be quoted like `!play "Where is my mind?"`. This is not needed in the Twitch chat. There you can just send `!play Where is my mind?`
+_Hint:_ To use the commands in `cmd` or `terminal` the second argument has to be quoted like `!play "Where is my mind?"`. This is not needed in the Twitch chat. There you can just send `!play Where is my mind?`
 
 | Purpose          | Command Example                                                                   | Output example                                                        |
 |:-----------------|:----------------------------------------------------------------------------------|:----------------------------------------------------------------------|
