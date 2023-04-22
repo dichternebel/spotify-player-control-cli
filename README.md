@@ -6,9 +6,9 @@ It works standalone or being called by another application like Streamer.bot, SA
 
 ## Prerequisites
 
-- A Spotify Premium account.
-- A registered [Spotify app](https://developer.spotify.com/documentation/general/guides/authorization/app-settings/) with callback `http://localhost:5000/spotifyCallback` and it's ClientID.
-- This thing downloaded from the [releases section](https://github.com/dichternebel/spotify-player-control-cli/releases).
+- You need a Spotify Premium account.
+- Go register a [Spotify app](https://developer.spotify.com/documentation/general/guides/authorization/app-settings/) with Redirect URI `http://localhost:5000/spotifyCallback` and copy it's ClientID.
+- Download this thing from the [releases section](https://github.com/dichternebel/spotify-player-control-cli/releases).
 
 ## Setting things up
 Once you downloaded the zip file extract the two files to wherever you want. Might be e.g. `C:\Tools\SpotifyPlayerControl\`.
