@@ -43,7 +43,7 @@ namespace SpotifyPlayerControl
             //args = new[] { "!repeat" }; //restriction violated... no idea what that means, doh!
             //args = new[] { "!mute" };
             //args = new[] { "!vol", "-50" };
-            args = new[] { "!playlist" };
+            //args = new[] { "!playlist" };
 #endif
 
             // initialize path
