@@ -43,7 +43,7 @@ namespace SpotifyPlayerControl
             //args = new[] { "!repeat" }; //restriction violated... no idea what that means, doh!
             //args = new[] { "!mute" };
             //args = new[] { "!vol", "-50" };
-            //args = new[] { "!playlist" };
+            args = new[] { "!playlist" };
 #endif
 
             // initialize path
@@ -392,7 +392,7 @@ namespace SpotifyPlayerControl
 
         private static async Task GetCurrentPlaylist(SpotifyClient spotifyClient, CurrentlyPlayingContext currentPlayback)
         {
-            if (currentPlayback.Context.Type != "playlist")
+            if (currentPlayback.Context == null || currentPlayback.Context.Type != "playlist")
             {
                 Console.Write("404 - No playlist in use!");
                 return;
@@ -407,8 +407,10 @@ namespace SpotifyPlayerControl
                 return;
             }
 
-            string privString = !currentPlaylist.Public.Value ? "(private)" : $" -> {currentPlaylist.ExternalUrls["spotify"]}";
-            Console.Write($"'{currentPlaylist.Name.Trim()}' by {currentPlaylist.Owner.DisplayName.Trim()} {privString}");
+            // Bug in SpotifyAPi.Web library? Property "Public" is always false...
+            //string urlString = !currentPlaylist.Public.Value ? "(private)" : $" -> {currentPlaylist.ExternalUrls["spotify"]}";
+            string urlString = $" -> {currentPlaylist.ExternalUrls["spotify"]}";
+            Console.Write($"'{currentPlaylist.Name.Trim()}' by {currentPlaylist.Owner.DisplayName.Trim()} {urlString}");
         }
     }
 }

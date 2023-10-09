@@ -6,7 +6,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <ApplicationIcon>DichterNebe1.ico</ApplicationIcon>
-    <Version>0.9.7</Version>
+    <Version>0.9.8</Version>
     <Authors>dichternebel</Authors>
     <!--
     <IncludeAllContentForSelfExtract>true</IncludeAllContentForSelfExtract>
